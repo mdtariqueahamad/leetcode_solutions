@@ -1,14 +1,15 @@
 class Solution {
 public:
-    vector<int> dp;
-    int helper(int n){
-        if(!n || 1 == n) return n;
-        if(dp[n] != -1) return dp[n];
-        dp[n] = helper(n-1) + helper(n-2);
-        return dp[n];
-    }
     int fib(int n) {
-        dp = vector<int>(n+1, -1);
-        return helper(n);
+        int n1 = 0, n2 = 1, temp;
+        if(n == 0 || n == 1){
+            (n == 0) ? temp = n1 : temp = n2;
+        }
+        for(int i = 2; i <= n; i++){
+            temp = n2 + n1;
+            n1 = n2;
+            n2 = temp;
+        }
+        return temp;
     }
 };
