@@ -1,14 +1,17 @@
 class Solution {
+    int rec(vector <int> nums, int low, int high, int tar){
+        if(low > high) return -1;
+
+        int mid = low + (high - low) / 2;
+
+        if(nums[mid] == tar) return mid;
+        else if(nums[mid] < tar)
+        return rec(nums, mid + 1, high, tar);
+        else
+        return rec(nums, low, mid - 1, tar);
+    }
 public:
     int search(vector<int>& nums, int target) {
-        int i = 0; int j = nums.size()-1;
-        int n;
-        while(i <= j){
-            n = (i + j)/2;
-            if(nums[n] == target) return n;
-            else if(nums[n] > target) j = n - 1;
-            else i = n + 1;
-        }
-        return -1;
+        return rec(nums, 0, nums.size()-1, target);
     }
 };
