@@ -1,32 +1,31 @@
 class Solution {
-public:
-    int myAtoi(string s) {
-        long long res = 0;
-        int i = 0, n = s.size();
-        int sign = 1;
-
-        // Skip leading spaces
-        while(i < n && s[i] == ' ') i++;
-
-        // Optional sign
-        if(i < n && (s[i] == '+' || s[i] == '-')) {
-            if(s[i] == '-') sign = -1;
-            i++;
-        }
-
-        // Parse digits
-        while(i < n && isdigit(s[i])) {
-            int digit = s[i] - '0';
-
-            // Check for overflow
-            if(res > (INT_MAX - digit) / 10) {
-                return sign == 1 ? INT_MAX : INT_MIN;
+    int rec(string s, long long num, int idx, int sign, bool check){
+        if(idx == s.size()) return sign * num;
+        if(s[idx] > '9') return sign * num;
+        else if(s[idx] < '0'){
+            if(check) return sign * num;
+            else{
+                if(s[idx] == '-')
+                return rec(s, num, idx+1, -1, true);
+                else{
+                    if(s[idx] == ' ')
+                    return rec(s, num, idx+1, sign, check);
+                    else if(s[idx] == '+')
+                    return rec(s, num, idx+1, sign, true);
+                    else return sign * num;
+                }
             }
-
-            res = res * 10 + digit;
-            i++;
         }
 
-        return (int)(res * sign);
+        num = num * 10 + (s[idx] - '0');
+        check = true;
+
+        if(num * sign >= INT_MAX) return INT_MAX;
+        else if(num * sign < INT_MIN) return INT_MIN;
+        return rec(s, num, idx+1, sign, check);
+    }
+public:
+    int myAtoi(string s){
+        return rec(s, 0, 0, 1, false);
     }
 };
