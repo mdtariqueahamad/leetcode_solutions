@@ -1,13 +1,15 @@
 class Solution {
 public:
+    double func(double x, long long n){
+        if(!n) return 1;
+        if(n&1) return x * func(x, n-1);
+        return func(x*x, n/2);
+    }
     double myPow(double x, int n) {
-        double res = 1;
-        if(x <= 0 && !(n%2)) x = -x;
-        else if(x <= 0){
-            x = -x;
-            res = -1;
+        if(n < 0){
+            long long N = n;
+            return 1 / func(x, -N);
         }
-        res *= exp(n * log(x));
-        return res;
+        return func(x, n);
     }
 };
