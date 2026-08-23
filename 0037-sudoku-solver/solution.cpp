@@ -31,25 +31,36 @@ public:
         return 'x';
     }
     bool sol = false;
-    void solve(int row, int col, char n){
-        if(row == 9){
-            sol = true;
-            return;
-        }
-        if(col == 9 || b[row][col] != '.'){
-            if(col == 9) solve(row+1, 0, n);
-            else solve(row, col+1, n);
-            return;
-        }
-        char cx = next(row, col, n);
-        if(cx == 'x') return; 
-        b[row][col] = cx;
-        if(col == 9) solve(row+1, 0, '1');
-        else solve(row, col+1, '1');
-        if(sol) return;
-        b[row][col] = '.';
-        solve(row, col, cx+1);
+    void solve(int row, int col, char n) {
+    if (row == 9) {
+        sol = true;
+        return;
     }
+
+    if (col == 9) {
+        solve(row + 1, 0, '1');
+        return;
+    }
+
+    if (b[row][col] != '.') {
+        solve(row, col + 1, '1');
+        return;
+    }
+
+    char cx = next(row, col, n);
+
+    if (cx == 'x') return;
+
+    b[row][col] = cx;
+
+    solve(row, col + 1, '1');
+
+    if (sol) return;
+
+    b[row][col] = '.';
+
+    solve(row, col, cx + 1);
+}
 
     void solveSudoku(vector<vector<char>>& board) {
         b = board;
