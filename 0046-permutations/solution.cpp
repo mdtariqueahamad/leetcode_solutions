@@ -1,20 +1,25 @@
 class Solution {
-    void perm(vector<int> &nums, int i, vector<vector<int>> &res){
-        if(i == nums.size()){
-            res.push_back(nums);
+public:
+    vector<vector<int>> ans;
+    vector<int> temp;
+    vector<bool> visited;
+    void solve(vector<int> &nums, int idx) {
+        if(nums.size() == idx) return;
+        if(temp.size() == nums.size()){
+            ans.push_back(temp);
             return;
         }
-        for(int j = i; j < nums.size(); j++){
-            swap(nums[i], nums[j]);
-            perm(nums, i + 1, res);
-            swap(nums[i], nums[j]);
-        }
-
+        if(!visited[idx]){
+        temp.push_back(nums[idx]);
+        visited[idx] = true;
+        solve(nums, 0);
+        temp.pop_back();
+        visited[idx] = false;}
+        solve(nums, idx+1);
     }
-public:
     vector<vector<int>> permute(vector<int>& nums) {
-        vector<vector<int>> res;
-        perm(nums, 0, res);
-        return res;
+        visited = vector<bool>(nums.size(), false);
+        solve(nums, 0);
+        return ans;
     }
 };
