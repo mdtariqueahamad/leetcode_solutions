@@ -10,8 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Sync LeetCode
-        uses: ecancer/leetcode-sync@v1
+        uses: joshcai/leetcode-sync@v1.7
         with:
           github-token: ${{ secrets.SECRET_1 }}
+          leetcode-csrf-token: ${{ secrets.SECRET_3 }}
           leetcode-session: ${{ secrets.SECRET_2 }}
           destination-folder: ''
