@@ -1,24 +1,25 @@
 class Solution {
 public:
-    int divide(int dividend, int divisor) {
-        if (dividend == INT_MIN && divisor == -1) 
-            return INT_MAX;
+    int divide(int getn, int getx) {
+        long long ans = 0;
+        int neg = 1;
+        if ((getn < 0) ^ (getx < 0)) neg = -1;
+        
+        long long n = llabs(getn);
+        long long x = llabs(getx);
 
-        long long a = abs((long long)dividend);
-        long long b = abs((long long)divisor);
-        long long result = 0;
-
-        for (int i = 31; i >= 0; --i) {
-            if ((a >> i) >= b) {
-                a -= (b << i);
-                result += (1LL << i);
+        for(int i = 31; i >=0 ; i--){
+            long long m = x << i;
+            if(m <= n){
+                ans += (1LL << i);
+                n -= m;
             }
         }
-        if ((dividend < 0) ^ (divisor < 0))
-            result = -result;
 
-            return result;
+       if (ans > INT_MAX) {
+            return neg == -1 ? INT_MIN : INT_MAX;
+        }
+
+        return neg == -1 ? -ans : ans;
     }
-    
 };
-
