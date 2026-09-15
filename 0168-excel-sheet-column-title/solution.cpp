@@ -1,16 +1,13 @@
 class Solution {
 public:
-    string convertToTitle(int inp) {
-        string res;
-        while(inp){
-            char c;
-            if(inp%26) c = inp % 26 + 64;
-            else c = 90;
-            res.insert(res.begin(),c);
-
-            if(inp % 26) inp /= 26;
-            else inp = inp / 26 - 1;
+    string convertToTitle(int n) {
+        string s;
+        while(n){
+            n--;
+            s += (n % 26) + 65;
+            n /= 26;
         }
-        return res;
+        reverse(s.begin(), s.end());
+        return s;
     }
 };
