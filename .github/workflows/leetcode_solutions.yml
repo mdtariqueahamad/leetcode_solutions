@@ -1,3 +1,14 @@
+name: Sync LeetCode Solutions
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Runs daily at 12:00 AM IST (18:30 UTC)
+    - cron: "30 18 * * *"
+
+permissions:
+  contents: write
+
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -5,9 +16,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.SECRET_1 }}   # <--- Add this line
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -24,9 +32,14 @@ jobs:
           git config user.name "mdtariqeahmad"
           git config user.email "mdtariqeahmad@users.noreply.github.com"
 
-      - name: Sync LeetCode
+      - name: Run Sync Script
         env:
           LEETCODE_SESSION: ${{ secrets.SECRET_2 }}
           LEETCODE_CSRF_TOKEN: ${{ secrets.SECRET_3 }}
         run: |
           python .github/scripts/sync_leetcode.py
+
+      - name: Commit and Push changes
+        run: |
+          git add .
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Sync LeetCode solutions" && git push)
