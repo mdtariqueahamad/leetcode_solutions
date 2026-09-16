@@ -15,8 +15,8 @@ import requests
 
 GRAPHQL_URL = "https://leetcode.com/graphql/"
 
-SESSION = os.environ.get(SECRET_2)
-CSRF_TOKEN = os.environ.get(SECRET_3)
+SESSION = os.environ.get("LEETCODE_SESSION")
+CSRF_TOKEN = os.environ.get("LEETCODE_CSRF_TOKEN")
 
 if not SESSION:
     print("ERROR: LEETCODE_SESSION secret is missing.")
@@ -44,13 +44,13 @@ REQUEST_DELAY = 1.0
 http = requests.Session()
 
 http.cookies.set(
-    SECRET_2,
+    "LEETCODE_SESSION",
     SESSION,
     domain=".leetcode.com"
 )
 
 http.cookies.set(
-    SECRET_3,
+    "csrftoken",
     CSRF_TOKEN,
     domain=".leetcode.com"
 )
