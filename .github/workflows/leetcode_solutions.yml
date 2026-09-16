@@ -1,18 +1,34 @@
 name: Sync LeetCode Solutions
 
 on:
-  workflow_dispatch: # Allows manual triggers anytime
+  workflow_dispatch:
   schedule:
-    - cron: '30 18 * * *' # Runs daily at 12:00 AM IST (6:30 PM UTC)
+    - cron: '30 18 * * *'
+
+permissions:
+  contents: write
 
 jobs:
   sync:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Sync LeetCode
-        uses: joshcai/leetcode-sync@v1.7
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          github-token: ${{ secrets.SECRET_1 }}
-          leetcode-csrf-token: ${{ secrets.SECRET_3 }}
-          leetcode-session: ${{ secrets.SECRET_2 }}
-          destination-folder: ''
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Sync LeetCode submissions
+        env:
+          LEETCODE_SESSION: ${{ secrets.SECRET_2 }}
+          LEETCODE_CSRF_TOKEN: ${{ secrets.SECRET_3 }}
+          GITHUB_TOKEN: ${{ secrets.SECRET_1 }}
+        run: python scripts/sync_leetcode.py
