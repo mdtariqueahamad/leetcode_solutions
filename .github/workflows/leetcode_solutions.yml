@@ -33,5 +33,5 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add leetcode_problems/
-          git diff --staging --quiet || git commit -m "Auto-sync LeetCode solved problems"
+          git diff --staging --quiet || git commit -m "Auto-sync LeetCode solved problems and updates"
           git push
