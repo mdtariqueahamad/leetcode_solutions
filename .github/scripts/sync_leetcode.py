@@ -12,7 +12,11 @@ if not SESSION or not CSRF_TOKEN:
     print("ERROR: LeetCode session cookies are missing.")
     sys.exit(1)
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+# __file__ resolves to <repo_root>/.github/scripts/sync_leetcode.py, so:
+#   parents[0] -> .github/scripts
+#   parents[1] -> .github
+#   parents[2] -> repo root  <-- this is what we want
+REPO_ROOT = Path(__file__).resolve().parents[2]
 PROBLEMS_DIR = REPO_ROOT / "leetcode_problems"
 PROBLEMS_DIR.mkdir(exist_ok=True)
 
@@ -72,10 +76,10 @@ def main():
         })
         result = data.get("problemsetQuestionList", {})
         questions = result.get("questions", [])
-        
+
         if not questions:
             break
-            
+
         all_questions.extend(questions)
         skip += limit
         if len(all_questions) >= result.get("total", 0):
