@@ -83,7 +83,6 @@ def main():
 
     print(f"Total solved problems found: {len(all_questions)}")
 
-    new_files_count = 0
     for q in all_questions:
         frontend_id = q["frontendId"]
         title = q["title"]
@@ -93,19 +92,19 @@ def main():
         file_name = f"{str(frontend_id).zfill(4)}-{slug}.py"
         file_path = PROBLEMS_DIR / file_name
 
-        # Only create a placeholder if the file does NOT exist (keeps your real code safe)
+        # If file doesn't exist, create it. If you update code locally or via submission, it preserves it.
         if not file_path.exists():
             content = f'''# LeetCode Problem {frontend_id}: {title}
 # Difficulty: {difficulty}
 # Link: https://leetcode.com/problems/{slug}/
 
 def solution():
+    # Write or update your accepted code here
     pass
 '''
             file_path.write_text(content, encoding="utf-8")
-            new_files_count += 1
 
-    print(f"Created {new_files_count} new problem files.")
+    print("Problem files synchronized.")
 
 if __name__ == "__main__":
     main()
