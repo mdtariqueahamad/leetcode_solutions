@@ -63,7 +63,6 @@ def main():
     limit = 100
     all_questions = []
 
-    # Fetch with pagination to get all solved problems
     while True:
         data = graphql("problemsetQuestionList", SOLVED_QUERY, {
             "categorySlug": "",
@@ -94,6 +93,7 @@ def main():
         file_name = f"{str(frontend_id).zfill(4)}-{slug}.py"
         file_path = PROBLEMS_DIR / file_name
 
+        # Only create a placeholder if the file does NOT exist (keeps your real code safe)
         if not file_path.exists():
             content = f'''# LeetCode Problem {frontend_id}: {title}
 # Difficulty: {difficulty}
