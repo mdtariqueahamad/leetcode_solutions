@@ -1,7 +1,7 @@
 import os
 import sys
-from pathlib import Path
 import requests
+from pathlib import Path
 
 GRAPHQL_URL = "https://leetcode.com/graphql/"
 
@@ -12,7 +12,9 @@ if not SESSION or not CSRF_TOKEN:
     print("ERROR: LeetCode session cookies are missing.")
     sys.exit(1)
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[1]
+PROBLEMS_DIR = REPO_ROOT / "leetcode_problems"
+PROBLEMS_DIR.mkdir(exist_ok=True)
 
 http = requests.Session()
 http.cookies.set("LEETCODE_SESSION", SESSION, domain=".leetcode.com")
@@ -23,28 +25,17 @@ HEADERS = {
     "Origin": "https://leetcode.com",
     "Referer": "https://leetcode.com/",
     "X-CSRFToken": CSRF_TOKEN,
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
 }
 
 def graphql(operation_name, query, variables=None):
     payload = {"operationName": operation_name, "query": query, "variables": variables or {}}
     response = http.post(GRAPHQL_URL, headers=HEADERS, json=payload, timeout=30)
-    
     if response.status_code != 200:
-        print(f"DEBUG: Status Code: {response.status_code}")
-        print(f"DEBUG: Response Text: {response.text[:500]}")
         raise RuntimeError(f"LeetCode HTTP {response.status_code}")
-        
-    try:
-        body = response.json()
-    except ValueError:
-        print(f"DEBUG: Response Text (Not JSON): {response.text[:500]}")
-        raise RuntimeError("LeetCode returned non-JSON response.")
-        
+    body = response.json()
     if body.get("errors"):
-        print(f"DEBUG: GraphQL Errors: {body['errors']}")
         raise RuntimeError(f"GraphQL error: {body['errors']}")
-        
     return body.get("data", {})
 
 SOLVED_QUERY = """
@@ -67,22 +58,54 @@ query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $fi
 """
 
 def main():
-    print("Starting LeetCode Sync...")
-    
-    data = graphql("problemsetQuestionList", SOLVED_QUERY, {
-        "categorySlug": "",
-        "skip": 0,
-        "limit": 100,
-        "filters": {"status": "AC"}
-    })
-    
-    result = data.get("problemsetQuestionList")
-    if not result:
-        print(f"DEBUG: Full Data Returned: {data}")
-        raise RuntimeError("Failed to fetch solved problems from LeetCode API.")
-    
-    questions = result.get("questions", [])
-    print(f"Successfully connected! Found {len(questions)} solved problems.")
+    print("Fetching solved problems from LeetCode...")
+    skip = 0
+    limit = 100
+    all_questions = []
+
+    # Fetch with pagination to get all solved problems
+    while True:
+        data = graphql("problemsetQuestionList", SOLVED_QUERY, {
+            "categorySlug": "",
+            "skip": skip,
+            "limit": limit,
+            "filters": {"status": "AC"}
+        })
+        result = data.get("problemsetQuestionList", {})
+        questions = result.get("questions", [])
+        
+        if not questions:
+            break
+            
+        all_questions.extend(questions)
+        skip += limit
+        if len(all_questions) >= result.get("total", 0):
+            break
+
+    print(f"Total solved problems found: {len(all_questions)}")
+
+    new_files_count = 0
+    for q in all_questions:
+        frontend_id = q["frontendId"]
+        title = q["title"]
+        slug = q["titleSlug"]
+        difficulty = q["difficulty"]
+
+        file_name = f"{str(frontend_id).zfill(4)}-{slug}.py"
+        file_path = PROBLEMS_DIR / file_name
+
+        if not file_path.exists():
+            content = f'''# LeetCode Problem {frontend_id}: {title}
+# Difficulty: {difficulty}
+# Link: https://leetcode.com/problems/{slug}/
+
+def solution():
+    pass
+'''
+            file_path.write_text(content, encoding="utf-8")
+            new_files_count += 1
+
+    print(f"Created {new_files_count} new problem files.")
 
 if __name__ == "__main__":
     main()
