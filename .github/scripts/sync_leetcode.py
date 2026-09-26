@@ -6,7 +6,6 @@ from pathlib import Path
 
 GRAPHQL_URL = "https://leetcode.com/graphql/"
 
-# SAFEKEEPING: .strip() removes accidental spaces or hidden newlines from GitHub Secrets
 SESSION = os.environ.get("LEETCODE_SESSION", "").strip()
 CSRF_TOKEN = os.environ.get("LEETCODE_CSRF_TOKEN", "").strip()
 
@@ -14,7 +13,6 @@ if not SESSION or not CSRF_TOKEN:
     print("ERROR: LeetCode session cookies are missing. Check your GitHub Secrets.")
     sys.exit(1)
 
-# Resolves to repo root assuming script is at /.github/scripts/sync_leetcode.py
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PROBLEMS_DIR = REPO_ROOT / "leetcode_problems"
 PROBLEMS_DIR.mkdir(parents=True, exist_ok=True)
@@ -28,7 +26,6 @@ HEADERS = {
     "Origin": "https://leetcode.com",
     "Referer": "https://leetcode.com/",
     "X-CSRFToken": CSRF_TOKEN,
-    # Swapped to a standard Mac UA to avoid bot detection blocks
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36", 
 }
 
@@ -37,7 +34,6 @@ def graphql(operation_name, query, variables=None):
     response = http.post(GRAPHQL_URL, headers=HEADERS, json=payload, timeout=30)
     
     if response.status_code != 200:
-        # CRITICAL FIX: Actually print the server's error message so we aren't flying blind
         print(f"\nServer Response Body: {response.text}\n")
         raise RuntimeError(f"LeetCode HTTP Error {response.status_code}")
         
@@ -47,14 +43,14 @@ def graphql(operation_name, query, variables=None):
         
     return body.get("data", {})
 
-# Restored your EXACT original query formatting
+# Bypassing the chat UI math-rendering bug by injecting the $ symbols dynamically
 SOLVED_QUERY = """
-query problemsetQuestionList(\(categorySlug: String,\)limit: Int, \(skip: Int,\)filters: QuestionListFilterInput) {
+query problemsetQuestionList(DOLLARcategorySlug: String, DOLLARlimit: Int, DOLLARskip: Int, DOLLARfilters: QuestionListFilterInput) {
     problemsetQuestionList: questionList(
-        categorySlug: $categorySlug
-        limit: $limit
-        skip: $skip
-        filters: $filters
+        categorySlug: DOLLARcategorySlug
+        limit: DOLLARlimit
+        skip: DOLLARskip
+        filters: DOLLARfilters
     ) {
         total: totalNum
         questions: data {
@@ -65,11 +61,11 @@ query problemsetQuestionList(\(categorySlug: String,\)limit: Int, \(skip: Int,\)
         }
     }
 }
-"""
+""".replace("DOLLAR", "$")
 
 SUBMISSIONS_QUERY = """
-query submissionList(\(offset: Int!,\)limit: Int!, $questionSlug: String!) {
-    questionSubmissionList(offset: \(offset, limit:\)limit, questionSlug: $questionSlug) {
+query submissionList(DOLLARoffset: Int!, DOLLARlimit: Int!, DOLLARquestionSlug: String!) {
+    questionSubmissionList(offset: DOLLARoffset, limit: DOLLARlimit, questionSlug: DOLLARquestionSlug) {
         submissions {
             id
             statusDisplay
@@ -77,15 +73,15 @@ query submissionList(\(offset: Int!,\)limit: Int!, $questionSlug: String!) {
         }
     }
 }
-"""
+""".replace("DOLLAR", "$")
 
 SUBMISSION_DETAILS_QUERY = """
-query submissionDetails($submissionId: Int!) {
-    submissionDetails(submissionId: $submissionId) {
+query submissionDetails(DOLLARsubmissionId: Int!) {
+    submissionDetails(submissionId: DOLLARsubmissionId) {
         code
     }
 }
-"""
+""".replace("DOLLAR", "$")
 
 EXTENSIONS = {
     "python": "py", "python3": "py", "pythondata": "py",
@@ -131,7 +127,6 @@ def main():
     new_problems_count = 0
 
     for q in all_questions:
-        # Handle cases where frontendId might be missing or unexpectedly typed
         frontendId_raw = q.get("frontendId")
         if not frontendId_raw:
             continue
