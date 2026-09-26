@@ -13,9 +13,8 @@ if not SESSION or not CSRF_TOKEN:
     print("ERROR: LeetCode session cookies are missing. Check your GitHub Secrets.")
     sys.exit(1)
 
+# Base directory is now the root of the repository
 REPO_ROOT = Path(__file__).resolve().parents[2]
-PROBLEMS_DIR = REPO_ROOT / "leetcode_problems"
-PROBLEMS_DIR.mkdir(parents=True, exist_ok=True)
 
 http = requests.Session()
 http.cookies.set("LEETCODE_SESSION", SESSION, domain=".leetcode.com")
@@ -43,7 +42,6 @@ def graphql(operation_name, query, variables=None):
         
     return body.get("data", {})
 
-# Bypassing the chat UI math-rendering bug by injecting the $ symbols dynamically
 SOLVED_QUERY = """
 query problemsetQuestionList(DOLLARcategorySlug: String, DOLLARlimit: Int, DOLLARskip: Int, DOLLARfilters: QuestionListFilterInput) {
     problemsetQuestionList: questionList(
@@ -121,9 +119,6 @@ def main():
         print("ERROR: 0 problems found. Your LEETCODE_SESSION cookie has likely expired.")
         sys.exit(1)
 
-    existing_files = list(PROBLEMS_DIR.glob("*.*"))
-    existing_prefixes = {f.stem.split('-')[0] for f in existing_files} 
-
     new_problems_count = 0
 
     for q in all_questions:
@@ -136,7 +131,12 @@ def main():
         slug = q["titleSlug"]
         difficulty = q["difficulty"]
 
-        if frontend_id in existing_prefixes:
+        # 1. Define the folder name (e.g., 0001-two-sum)
+        folder_name = f"{frontend_id}-{slug}"
+        problem_folder = REPO_ROOT / folder_name
+
+        # Skip if this problem's folder already exists
+        if problem_folder.exists():
             continue
 
         print(f"Fetching code for {frontend_id}: {title}...")
@@ -167,25 +167,34 @@ def main():
                 continue
                 
             code = details["code"]
-            file_name = f"{frontend_id}-{slug}.{ext}"
-            file_path = PROBLEMS_DIR / file_name
-
-            if ext in ["py", "rb", "sh"]:
-                header = f"# LeetCode Problem {frontend_id}: {title}\n# Difficulty: {difficulty}\n# Link: https://leetcode.com/problems/{slug}/\n# Language: {lang}\n\n"
-            elif ext == "sql":
-                header = f"-- LeetCode Problem {frontend_id}: {title}\n-- Difficulty: {difficulty}\n-- Link: https://leetcode.com/problems/{slug}/\n-- Language: {lang}\n\n"
-            else:
-                header = f"// LeetCode Problem {frontend_id}: {title}\n// Difficulty: {difficulty}\n// Link: https://leetcode.com/problems/{slug}/\n// Language: {lang}\n\n"
-
-            file_path.write_text(header + code, encoding="utf-8")
-            new_problems_count += 1
             
+            # Create the folder for the problem
+            problem_folder.mkdir(parents=True, exist_ok=True)
+            
+            # 2. Write the solution code file
+            file_path = problem_folder / f"solution.{ext}"
+            file_path.write_text(code, encoding="utf-8")
+            
+            # 3. Write the README.md file inside the folder
+            readme_path = problem_folder / "README.md"
+            readme_content = f"""# {frontend_id}. {title}
+
+**Difficulty:** {difficulty}
+
+**Link:** [https://leetcode.com/problems/{slug}/](https://leetcode.com/problems/{slug}/)
+
+## Solution
+**Language:** {lang}
+"""
+            readme_path.write_text(readme_content, encoding="utf-8")
+            
+            new_problems_count += 1
             time.sleep(1.5)
             
         except Exception as e:
             print(f"  Failed to fetch code for {slug}: {e}")
 
-    print(f"Synchronization complete. Added {new_problems_count} new files.")
+    print(f"Synchronization complete. Added {new_problems_count} new problem folders.")
 
 if __name__ == "__main__":
     main()
