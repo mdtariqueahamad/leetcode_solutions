@@ -34,8 +34,8 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Stage the directory containing the problems
-          git add leetcode_problems/
+          # Stage all new folders and files created at the repository root
+          git add .
           
           # Check if there are actually any new files staged
           if git diff --cached --quiet; then
