@@ -7,12 +7,12 @@ on:
 
 jobs:
   sync:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04   # github warning
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.SECRET_1 }} # Using your fine-grained Personal Access Token
+          token: ${{ secrets.SECRET_1 }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -26,6 +26,7 @@ jobs:
         env:
           LEETCODE_SESSION: ${{ secrets.SECRET_2 }}
           LEETCODE_CSRF_TOKEN: ${{ secrets.SECRET_3 }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python .github/scripts/sync_leetcode.py
 
       - name: Commit and Push Changes
@@ -33,10 +34,8 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Stage all new folders and files created at the repository root
           git add .
           
-          # Check if there are actually any new files staged
           if git diff --cached --quiet; then
             echo "No changes to commit (no new problems solved)."
           else
