@@ -3,7 +3,10 @@ name: Sync LeetCode Solutions
 on:
   schedule:
     - cron: "0 0 * * *" # Runs every day at midnight UTC
-  workflow_dispatch: # Allows manual trigger from GitHub UI
+  workflow_dispatch:    # Allows manual trigger from GitHub UI
+
+permissions:
+  contents: write       # CRITICAL: Allows the Action to push code without needing a Personal Access Token
 
 jobs:
   sync:
@@ -11,8 +14,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.SECRET_1 }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -24,18 +25,22 @@ jobs:
 
       - name: Run LeetCode Sync Script
         env:
-          LEETCODE_SESSION: ${{ secrets.SECRET_2 }}
-          LEETCODE_CSRF_TOKEN: ${{ secrets.SECRET_3 }}
+          LEETCODE_SESSION: ${{ secrets.LEETCODE_SESSION }}
+          LEETCODE_CSRF_TOKEN: ${{ secrets.LEETCODE_CSRF_TOKEN }}
         run: python .github/scripts/sync_leetcode.py
 
       - name: Commit and Push Changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Stage the directory containing the problems
           git add leetcode_problems/
+          
+          # Check if there are actually any new files staged
           if git diff --cached --quiet; then
-            echo "No changes to commit"
+            echo "No changes to commit (no new problems solved)."
           else
-            git commit -m "Auto-sync LeetCode solved problems"
+            git commit -m "Auto-sync newly solved LeetCode problems"
             git push
           fi
