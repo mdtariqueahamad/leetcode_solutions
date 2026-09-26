@@ -25,8 +25,8 @@ jobs:
 
       - name: Run LeetCode Sync Script
         env:
-          LEETCODE_SESSION: ${{ secrets.LEETCODE_SESSION }}
-          LEETCODE_CSRF_TOKEN: ${{ secrets.LEETCODE_CSRF_TOKEN }}
+          LEETCODE_SESSION: ${{ secrets.SECRET_2 }}
+          LEETCODE_CSRF_TOKEN: ${{ secrets.SECRET_3 }}
         run: python .github/scripts/sync_leetcode.py
 
       - name: Commit and Push Changes
