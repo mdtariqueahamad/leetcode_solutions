@@ -5,15 +5,14 @@ on:
     - cron: "0 0 * * *" # Runs every day at midnight UTC
   workflow_dispatch:    # Allows manual trigger from GitHub UI
 
-permissions:
-  contents: write       # CRITICAL: Allows the Action to push code without needing a Personal Access Token
-
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.SECRET_1 }} # Using your fine-grained Personal Access Token
 
       - name: Set up Python
         uses: actions/setup-python@v5
