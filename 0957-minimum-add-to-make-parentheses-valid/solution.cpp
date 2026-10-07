@@ -1,21 +1,14 @@
 class Solution {
 public:
     int minAddToMakeValid(string s) {
+
+        int extra = 0, depth = 0;
+
+        for(char c: s)
+            if('(' == c) depth++;
+            else
+                !depth ? extra++: depth--;
         
-        int depth = 0, par = 0;
-
-        for(char c: s){
-            if('(' == c) {
-                depth++;
-            } else {
-                if(0 == depth) {
-                    par++;
-                } else {
-                    depth--;
-                }
-            }
-        }
-
-        return par+depth;
+        return extra + depth;
     }
 };
