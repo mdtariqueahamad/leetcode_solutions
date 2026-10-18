@@ -1,16 +1,19 @@
 class Solution {
 public:
-    vector<int> getRow(int numRows) {
-        vector<vector<int>> res(numRows+1);
-        res[0] = {1};
-        int i = 1;
-        for(; i <= numRows; i++){
-            res[i].push_back(1);
-            for(int j = 1; j < i; j++){
-                res[i].push_back(res[i-1][j-1]+res[i-1][j]);
+    vector<int> getRow(int n) {
+
+        vector<vector<int>> PT(n+1);
+
+        for(int i = 0; i <= n; i++) {
+            PT[i].resize(i+1);
+
+            PT[i][0] = PT[i][i] = 1;
+
+            for(int j = 1; j < i; j++) {
+                PT[i][j] = (PT[i-1][j] + PT[i-1][j-1]);
             }
-            res[i].push_back(1);
         }
-        return res[numRows];
+
+        return PT.back();
     }
 };
