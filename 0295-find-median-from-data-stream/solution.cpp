@@ -30,3 +30,4 @@ public:
         return (max_heap.top() + min_heap.top()) / 2.0;
     }
 };
+
