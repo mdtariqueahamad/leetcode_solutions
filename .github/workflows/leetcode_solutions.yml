@@ -2,43 +2,23 @@ name: Sync LeetCode Solutions
 
 on:
   schedule:
-    - cron: "0 0 * * *" # Runs every day at midnight UTC
-  workflow_dispatch:    # Allows manual trigger from GitHub UI
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   sync:
-    runs-on: ubuntu-24.04   # github warning
+    runs-on: ubuntu-24.04
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - name: Sync LeetCode submissions
+        uses: joshcai/leetcode-sync@v1.7
         with:
-          token: ${{ secrets.SECRET_1 }}
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - name: Install Dependencies
-        run: pip install requests
-
-      - name: Run LeetCode Sync Script
-        env:
-          LEETCODE_SESSION: ${{ secrets.SECRET_2 }}
-          LEETCODE_CSRF_TOKEN: ${{ secrets.SECRET_3 }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python .github/scripts/sync_leetcode.py
-
-      - name: Commit and Push Changes
-        run: |
-          git config --global user.name "mdtariqueahamad"
-          git config --global user.email "mdtariqbist@gmail.com"
-
-          git ls-files --others --modified --exclude-standard \
-            | xargs -r -d '\n' -n1 dirname | sort -u \
-            | while read -r dir; do
-                git add -- "$dir"
-                git commit -m "Add solution: $(basename "$dir")"
-              done
-
-          git push
+          github-token: ${{ github.token }}
+          leetcode-csrf-token: ${{ secrets.SECRET_3 }}
+          leetcode-session: ${{ secrets.SECRET_2 }}
+          destination-folder: leetcode
+          verbose: true
+          commit-header: "[LeetCode Sync]"
+          filter-duplicate-secs: 86400
