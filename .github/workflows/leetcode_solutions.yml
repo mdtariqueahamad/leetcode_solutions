@@ -33,12 +33,12 @@ jobs:
         run: |
           git config --global user.name "mdtariqueahamad"
           git config --global user.email "mdtariqbist@gmail.com"
-          
-          git add .
-          
-          if git diff --cached --quiet; then
-            echo "No changes to commit (no new problems solved)."
-          else
-            git commit -m "Auto-sync newly solved LeetCode problems"
-            git push
-          fi
+
+          git ls-files --others --modified --exclude-standard \
+            | xargs -r -d '\n' -n1 dirname | sort -u \
+            | while read -r dir; do
+                git add -- "$dir"
+                git commit -m "Add solution: $(basename "$dir")"
+              done
+
+          git push
