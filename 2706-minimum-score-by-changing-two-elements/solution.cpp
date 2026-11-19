@@ -1,0 +1,9 @@
+class Solution {
+public:
+    int minimizeSum(vector<int>& nums) {
+        
+        sort(begin(nums), end(nums));
+
+        return min({nums[nums.size()-1] - nums[2], nums[nums.size()-3] - nums[0], nums[nums.size()-2] - nums[1]});
+    }
+};
